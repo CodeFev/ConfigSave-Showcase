@@ -5,7 +5,7 @@ ConfigSave ist ein fortgeschrittenes Tool für Unity, das Spielern erlaubt, loka
 
 🖼️ GIF Showcase
 <div align="center">
-  <img src="[https://github.com/user-attachments/assets/76a43733-5d76-42b7-a5ff-debf196a4fab]" width="100%" />
+  <img src="https://github.com/user-attachments/assets/76a43733-5d76-42b7-a5ff-debf196a4fab" width="100%" />
 </div>
 
 💡 Key Features Implemented
