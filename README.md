@@ -16,10 +16,10 @@
   <p><i>Live-Demo: Upload einer Konfiguration mit automatischer Erkennung und Feedback.</i></p>
 </div>
 
-# Get It Now:
+### Get It Now:
 https://configsave.com/steam
 
-# Website:
+### Website:
 https://configsave.com
 
 ---
