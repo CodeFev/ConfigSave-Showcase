@@ -12,11 +12,8 @@ Die Nutzung ist an den Steam-Account des Nutzers gebunden: Steam muss aktiv sein
 <img src="https://github.com/user-attachments/assets/76a43733-5d76-42b7-a5ff-debf196a4fab" width="100%" />
 *Live-Demo: Upload einer Konfiguration mit automatischer Erkennung, Sicherheitsprüfungen und direktem UI-Feedback.*
 
-🖼️ GIF Showcase
-<div align="center">
-  <img src="[https://github.com/user-attachments/assets/76a43733-5d76-42b7-a5ff-debf196a4fab]" width="100%" />
-  <img src="https://github.com/user-attachments/assets/76a43733-5d76-42b7-a5ff-debf196a4fab" width="100%" />
-</div>
+<img width="3063" height="1892" alt="Screenshot 2026-01-09 231330" src="https://github.com/user-attachments/assets/ea166ce9-632f-49d2-9a9e-b0b07a197619" />
+<img width="2291" height="1823" alt="Screenshot 2026-01-09 231340" src="https://github.com/user-attachments/assets/5a49a975-2c28-4cc5-8b73-d5af1dadeca1" />
 
 ## 🔗 Links
 
