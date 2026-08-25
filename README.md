@@ -1,90 +1,164 @@
 # ☁️ ConfigSave – Cloud Save System (Showcase)
 
-> ⚠️ **Hinweis:** Dies ist ein Portfolio-Showcase. Der vollständige Quellcode ist aktuell **private / closed source**, da er Teil eines kommerziellen Prototyps ist. Dieses Repository demonstriert Architektur, UI-Design und ausgewählte Sicherheitsmechanismen.
+> ⚠️ **Portfolio-Showcase.** Der vollständige Quellcode bleibt private / closed source, da ConfigSave Teil eines kommerziellen Produkts ist. Dieses Repository zeigt Produktkonzept, Architektur, UI-Design und ausgewählte Sicherheits- sowie Betriebsmechanismen — ohne Zugangsdaten, Secrets oder produktionskritische Implementierungsdetails.
 
-**ConfigSave** ist ein Unity-Tool, mit dem Spieler lokale Konfigurationsdateien sicher in der Cloud speichern und zwischen PCs synchronisieren können. Es erkennt komplexe Ordner- und Dateistrukturen rekursiv und verwaltet diese über **Supabase**.
+**ConfigSave** ist ein Windows-Tool für unterstützte Steam-Spiele. Nutzer können lokale Konfigurationsdateien als benannte Cloud-Konfigurationen sichern, verwalten und auf einem anderen PC wiederherstellen.
 
-Die Nutzung ist an den Steam-Account des Nutzers gebunden: Steam muss aktiv sein und der Nutzer muss mit dem lizenzierten Steam-Account angemeldet sein.
+Die aktuelle Version wird unabhängig von Steam veröffentlicht und über die eigene Website vertrieben. Der Checkout erfolgt über Stripe. Die Lizenz wird nach erfolgreicher Zahlung an die SteamID64 des Käufers gebunden. Steam muss beim Verwenden von ConfigSave laufen und der lokal angemeldete Steam-Account muss mit dem lizenzierten Account übereinstimmen.
 
 ---
 
 ## 🖼️ Demo Showcase
-<img src="https://github.com/user-attachments/assets/76a43733-5d76-42b7-a5ff-debf196a4fab" width="100%" />
-*Live-Demo: Upload einer Konfiguration mit automatischer Erkennung, Sicherheitsprüfungen und direktem UI-Feedback.*
 
-<img width="3063" height="1892" alt="Screenshot 2026-01-09 231330" src="https://github.com/user-attachments/assets/ea166ce9-632f-49d2-9a9e-b0b07a197619" />
-<img width="2291" height="1823" alt="Screenshot 2026-01-09 231340" src="https://github.com/user-attachments/assets/5a49a975-2c28-4cc5-8b73-d5af1dadeca1" />
+<img src="https://github.com/user-attachments/assets/76a43733-5d76-42b7-a5ff-debf196a4fab" width="100%" alt="ConfigSave upload workflow" />
 
-## 🔗 Links
+*Upload einer Konfiguration mit automatischer Dateierkennung, Sicherheitsprüfungen und direktem UI-Feedback.*
 
-- **Get it now:** [configsave.com/steam](https://configsave.com/steam)
-- **Website:** [configsave.com](https://configsave.com/)
+<img width="3063" height="1892" alt="ConfigSave interface overview" src="https://github.com/user-attachments/assets/ea166ce9-632f-49d2-9a9e-b0b07a197619" />
+
+<img width="2291" height="1823" alt="ConfigSave configuration management" src="https://github.com/user-attachments/assets/5a49a975-2c28-4cc5-8b73-d5af1dadeca1" />
 
 ---
 
-## 💡 Implementierte Kernfunktionen
+## 🔗 Links
 
-### 🛡️ 1. Serverseitige Sicherheit mit Row Level Security
+- **Get Premium:** [configsave.com](https://configsave.com/)
+- **Download:** [configsave.com/download](https://configsave.com/download)
+- **Supported games:** [configsave.com/supported-games.html](https://configsave.com/supported-games.html)
+- **FAQ:** [configsave.com/faq.html](https://configsave.com/faq.html)
 
-Anstatt dem Client vollständig zu vertrauen, werden zentrale Sicherheitsregeln direkt auf Datenbankebene in PostgreSQL bzw. Supabase durchgesetzt.
+---
 
-- **Hard Slot Limit:** Ein Nutzer kann maximal **50 Konfigurationen** besitzen. Weitere Uploads werden direkt auf SQL-Ebene blockiert.
-- **Anti-Malware Policy:** Datenbankregeln verhindern den Upload ausführbarer oder potenziell gefährlicher Dateien wie `.exe` und `.bat`.
-- **Validierte Dateitypen:** Uploads sind auf definierte und erwartete Konfigurationsdateien beschränkt.
+## 💡 Kernfunktionen
 
-### 🧠 2. Smart Rate Limiting
+### ☁️ 1. Cloud-Konfigurationen
 
-Zum Schutz vor API-Missbrauch und wiederholten Upload-Versuchen wird ein zweistufiges Rate-Limiting-System eingesetzt.
+ConfigSave sichert unterstützte lokale Spieleinstellungen als benannte Cloud-Konfigurationen.
 
-- **Client-seitig:** Lokales Tracking über `PlayerPrefs` sperrt den Upload-Button temporär nach zu vielen Anfragen.
-- **Server-seitig:** Die Datenbank bzw. Backend-Regeln weisen Anfragen ab, wenn Stundenlimits oder Quotas überschritten sind.
+- Konfigurationen erstellen, laden, anwenden, umbenennen und löschen
+- Wiederherstellung der bevorzugten Einstellungen nach PC-Wechsel oder Neuinstallation
+- Unterstützung rekursiver Ordner- und Dateistrukturen
+- Cloud-Dateien werden im Storage-Bereich pro Nutzer getrennt gespeichert
+- Bis zu 50 gespeicherte Konfigurationen pro Nutzer
 
-### 🛡️ 3. Safety & Integrity Checks
+### 🧠 2. Metadaten, Caching und schnelle Listen
 
-Das Tool reduziert das Risiko von Datenverlust und beschädigten Konfigurationsdateien durch clientseitige Schutzmechanismen.
+ConfigSave vermeidet unnötige Downloads kompletter Konfigurationsarchive.
 
-- **Active Process Detection:** Über Windows-API-Aufrufe mit `user32.dll` wird geprüft, ob ein Zielspiel — etwa Apex Legends — aktiv läuft. Schreibvorgänge werden in diesem Fall blockiert, um Dateikorruption zu vermeiden.
-- **Conflict Resolution:** Vor dem Erstellen einer Konfiguration wird asynchron geprüft, ob bereits eine Cloud-Konfiguration mit demselben Namen existiert.
-- **Gezielte Nutzer-Rückmeldung:** Das UI zeigt Ladezustände, Sperren, Fehler und erfolgreiche Vorgänge direkt an.
+- **Metadata-first:** Beim Upload wird eine schlanke `info.json` mit relevanten Metadaten erstellt
+- **Schnelle Listenansicht:** Gespeicherte Konfigurationen lassen sich ohne vollständigen Download darstellen
+- **Lokales Caching:** Dateilisten werden lokal gehalten und bei Bedarf oder manuellem Refresh aktualisiert
+- **Asynchrones UI:** Ladezustände, erfolgreiche Aktionen und Fehler werden direkt im Client angezeigt
 
-### ⚡ 4. Performance & Metadata-Architektur
+### 🎮 3. Erweiterbare Spieleprofile
 
-ConfigSave lädt nicht bei jedem Start komplette Konfigurationsarchive herunter. Stattdessen wird eine schlanke Metadaten-Architektur verwendet.
+Unterstützte Spiele und Konfigurationspfade werden über `game_paths.json` verwaltet.
 
-- **Metadata-First:** Beim Upload wird eine kompakte `info.json` mit Metadaten wie Größe und Erstellungsdatum erzeugt.
-- **Schnelle Listenansicht:** Das UI lädt zunächst nur die Metadaten und kann gespeicherte Konfigurationen dadurch in Millisekunden anzeigen.
-- **Aggressives Caching:** Dateilisten werden lokal gespeichert und nur bei Bedarf oder nach einem manuellen Refresh erneut über die API geladen.
+- Unterstützung typischer Windows-Pfade wie `AppData`, `Documents`, Steam-Bibliotheken und spielbezogene Konfigurationsordner
+- SteamID-bezogene Pfadvariablen für accountabhängige Speicherorte
+- Neue Spiele und Pfadstrukturen können über Konfiguration ergänzt werden
+- Keine erneute Kompilierung der Anwendung erforderlich, wenn nur Spieleprofile ergänzt werden
 
-### 🎮 5. Dynamische Spielerkennung
+### 🛡️ 4. Schutz vor Datenverlust
 
-Das Tool liest eine externe Konfiguration aus `game_paths.json`, um unterstützte Spiele und Konfigurationspfade automatisch zu erkennen.
+Mehrere clientseitige Prüfungen reduzieren das Risiko beschädigter oder unvollständiger Konfigurationsstände.
 
-Unterstützt werden unter anderem:
+- Aktive Zielspiele werden vor kritischen Schreibvorgängen erkannt
+- Schreib- oder Wiederherstellungsvorgänge können blockiert werden, solange ein betroffenes Spiel läuft
+- Prüfung auf doppelte Konfigurationsnamen
+- Validierung von Konfigurationsnamen und erwarteten Dateitypen
+- Verständliche UI-Meldungen bei Sperren, Konflikten und Fehlern
 
-- **SteamID-Wildcards:** Automatische Auflösung accountbezogener Pfade, beispielsweise `{UserID}/730/local/cfg`.
-- **Flexible Speicherorte:** Unterstützung für typische Windows-Pfade wie `AppData`, `Documents` und `SteamApps`.
-- **Erweiterbare Spielprofile:** Neue Spiele und Pfadstrukturen können über JSON ergänzt werden, ohne die Anwendung neu kompilieren zu müssen.
+### 🔐 5. Eigene Lizenzprüfung mit SteamID64-Bindung
 
-### 🔐 6. SteamID-gebundene Lizenzprüfung
+ConfigSave verwendet keine SteamPipe-Veröffentlichung und kein Steam-DRM als Kauf- oder Lizenzsystem. Stattdessen besitzt die Anwendung eine eigene SteamID64-gebundene Lizenzprüfung.
 
-ConfigSave verwendet eine Steam-basierte Accountbindung für die Lizenzprüfung.
+1. ConfigSave erkennt, ob Steam lokal läuft.
+2. Der Client liest die SteamID64 des aktuell angemeldeten Steam-Accounts sowie den lokalen Persona-Namen.
+3. Die App fragt einen serverseitigen Lizenz-Endpunkt ab.
+4. Der Server prüft die SteamID64 gegen den Lizenzstatus.
+5. Lizenzpflichtige Cloud-Funktionen werden nur bei gültiger Lizenz freigegeben.
 
-- **Steam-Account-Erkennung:** Die Anwendung ermittelt die SteamID des aktuell angemeldeten Nutzers.
-- **Accountgebundene Lizenz:** Eine Lizenz ist einem konkreten Steam-Account zugeordnet und nicht frei auf andere Nutzer übertragbar.
-- **Steam-Anmeldung erforderlich:** Zur Nutzung muss Steam aktiv sein und der Nutzer muss mit dem Steam-Account angemeldet sein, für den die Lizenz aktiviert wurde.
-- **Lizenzstatus im Client:** Der Client zeigt Lizenztyp und gegebenenfalls das Ablaufdatum einer Subscription an.
-- **Schutz vor einfachem Missbrauch:** Die Prüfung verhindert, dass ein Kauf ohne Weiteres mit beliebigen Steam-Accounts verwendet wird.
+Die SteamID64 dient als Accountbindung, nicht als frei übertragbarer Lizenzschlüssel.
 
-> Die SteamID-gebundene Lizenzprüfung ersetzt eine reine Steam-DRM-Logik. Der Fokus liegt auf der Bindung einer kommerziellen Lizenz an einen eindeutig angemeldeten Steam-Account.
+- Steam muss aktiv sein
+- Der angemeldete Steam-Account muss der Lizenz zugeordnet sein
+- Der Client zeigt Steam-Name, Lizenztyp und Status an
+- Die Lizenzprüfung bleibt serverseitig kontrolliert
 
-### 📡 7. Monitoring, Stabilität und Manipulationsschutz
+### 💳 6. Eigener Checkout und Stripe-Zahlungen
 
-Das Projekt ist auf einen kommerziellen Live-Betrieb ausgelegt und enthält mehrere Maßnahmen für Diagnose, Stabilität und Schutz.
+Premium wird über die ConfigSave-Website verkauft.
 
-- **Crash Reporting mit Sentry:** Sentry.io ist integriert, einschließlich IL2CPP-Symbol-Upload. Dadurch bleiben Abstürze auch im kompilierten C++-Build nachvollziehbar.
-- **Steam-Initialisierung:** Die Anwendung prüft beim Start, ob Steam verfügbar und aktiv ist.
-- **Manipulationsschutz:** Zusätzliche Prüfungen erkennen verdächtige Änderungen an relevanten Steam-Dateien, etwa eine manipulierte `steam_appid.txt`, sowie typische DLL-Injection-Szenarien.
-- **IL2CPP-Build:** Das Unity-Projekt verwendet IL2CPP, um den C#-Code für den Release zu kompilieren und die direkte Einsicht in den Anwendungscode zu erschweren.
+- Eigene Pricing- und Checkout-Oberfläche
+- Steam-Profil, Custom URL oder SteamID64 wird vor dem Checkout geprüft und der Bestellung zugeordnet
+- Stripe verarbeitet den Zahlungs- und Subscription-Workflow
+- Serverseitige Webhooks aktualisieren Lizenz- und Zahlungsstatus idempotent
+- Checkout-Session, Stripe-Kunde und Subscription werden für die jeweilige Lizenz verknüpft
+- Payment-Events werden separat protokolliert, um doppelte Webhook-Verarbeitung zu verhindern
+
+### 📅 7. Subscription-Lebenszyklus im Client
+
+Die Anwendung übersetzt serverseitige Lizenzzustände in klare Nutzerinformationen.
+
+| Lizenzzustand | Verhalten in ConfigSave |
+|---|---|
+| `active` | Cloud-Funktionen verfügbar; nächster Verlängerungstermin sichtbar |
+| `canceled` | Zugriff bis Ablaufdatum; Anzeige `Access until` |
+| `past_due` | Statushinweis `Next payment` gemäß Billing-Policy |
+| `expired` | Cloud-Funktionen gesperrt; Ablauf- und Aufbewahrungsdatum sichtbar |
+| `refunded` | Cloud-Funktionen gesperrt; Erstattungsstatus sichtbar |
+| Keine Lizenz | Kein Cloud-Zugriff; Kaufhinweis |
+| `purged_at` gesetzt | Cloud-Daten wurden bereinigt; Zugriff bleibt gesperrt |
+
+### 🗂️ 8. Aufbewahrung und automatische Datenlöschung
+
+Cloud-Konfigurationen bleiben nach Ende eines Abos nicht unbegrenzt gespeichert.
+
+- Der Lizenzstatus kann ein `delete_after`-Datum enthalten
+- Ein geplanter Wartungsprozess prüft bereinigungsfähige Konten
+- Nach Ende der Aufbewahrungsfrist löscht der Prozess ausschließlich die Dateien des betreffenden Nutzers im Storage-Bucket `userdata`
+- Der Löschvorgang wird über `purge_started_at` und `purged_at` nachvollziehbar dokumentiert
+- Der Client informiert Nutzer, wenn gespeicherte Cloud-Konfigurationen gelöscht wurden
+
+### 📡 9. Backend-Sicherheit und Betrieb
+
+Der Produktbetrieb kombiniert Client-Prüfungen mit serverseitiger Kontrolle.
+
+- Supabase mit PostgreSQL, Edge Functions und Storage
+- Row Level Security für Datenzugriffe
+- Serverseitiger Lizenz-Endpunkt für die App
+- Service-Role-Zugriffe bleiben ausschließlich im Backend
+- Idempotente Payment-Event-Verarbeitung
+- Getrennte Nutz-, Lizenz- und Zahlungsdaten
+- Geplante Wartung für Ablauf- und Löschprozesse
+
+### ⚡ 10. Monitoring und Release-Härtung
+
+- Sentry für Crash Reporting und Diagnose
+- Unity IL2CPP-Release-Builds für Windows x64
+- Bereinigte Release-Pakete ohne `.env`-Dateien, private Tokens, Debug-Logs oder PDB-Dateien
+- Separater Inno-Setup-Installer für die Windows-Auslieferung
+- Wiederholbare Build-, Lizenz-, Checkout- und Purge-Tests vor Releases
+
+---
+
+## ✅ Ende-zu-Ende getestet
+
+Die finale Produktstrecke wurde mit Testdaten geprüft:
+
+- Erfolgreicher Checkout → aktive Lizenz in der App
+- Anzeige von Steam-Persona, Plan und Verlängerungsdatum
+- Verhinderung bzw. Behandlung eines doppelten Kaufs
+- Gekündigte Subscription mit `Access until`
+- Fehlgeschlagene Zahlung mit `Next payment`
+- Abgelaufene Subscription mit gesperrten Cloud-Funktionen
+- Erstattung mit gesperrten Cloud-Funktionen
+- Steam-Account ohne Lizenz
+- Steam nicht aktiv
+- Geplanter Löschtermin nach Ablauf
+- Physische Löschung der Testdateien im Storage-Bucket `userdata`
+- Nachweis des bereinigten Lizenzstatus über `purge_started_at` und `purged_at`
 
 ---
 
@@ -93,14 +167,26 @@ Das Projekt ist auf einen kommerziellen Live-Betrieb ausgelegt und enthält mehr
 | Bereich | Technologie |
 |---|---|
 | Engine | Unity 2022 LTS, C#, IL2CPP |
-| Backend | Supabase, PostgreSQL, Storage Buckets, Row Level Security |
-| Lizenzbindung | Steamworks.NET, SteamID-Integration |
-| Monitoring | Sentry, automatisiertes Crash Reporting |
-| Betriebssystem-Integration | Windows Native APIs, `user32.dll`, Registry |
-| UI | Unity uGUI mit asynchronen Feedback-Loops |
+| Plattform | Windows x64 |
+| Backend | Supabase, PostgreSQL, Edge Functions, Storage |
+| Zahlungen | Stripe Checkout, Stripe Subscriptions, Webhooks |
+| Lizenzsystem | Eigene SteamID64-gebundene serverseitige Lizenzprüfung |
+| Steam-Integration | Lokale Steam-Sitzungs-, SteamID64- und Persona-Erkennung |
+| Monitoring | Sentry Crash Reporting |
+| Windows-Integration | Windows Registry, `kernel32.dll`, Prozessprüfung |
+| Installer | Inno Setup |
+| Website | HTML, CSS, JavaScript |
 
 ---
 
 ## 🪟 Plattform-Kompatibilität
 
-ConfigSave nutzt native Windows-Bibliotheken, unter anderem `user32.dll`, für die Prozesserkennung. Daher ist das Tool derzeit ausschließlich für **Windows-Systeme** konzipiert.
+ConfigSave ist derzeit für **Windows x64** entwickelt.
+
+Die Anwendung verwendet Windows-spezifische Funktionen für die Erkennung der lokalen Steam-Sitzung und für sicherheitsrelevante Prozessprüfungen. Andere Plattformen werden aktuell nicht unterstützt.
+
+---
+
+## 🔒 Sicherheitsnotiz
+
+Dieses Repository enthält bewusst keine produktiven Secrets, API-Keys, Webhook-Secrets, Service-Role-Keys, privaten URLs, `.env`-Dateien oder vollständigen Produktcode. Öffentliche Showcase-Inhalte stellen keine vollständige Betriebs- oder Sicherheitsdokumentation dar.
